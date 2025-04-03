@@ -34,6 +34,7 @@ class RoleMasterAPI(APIView):
             transaction.rollback()
             return Response({"status":"error","message":e})
 
+@permission_classes([AllowAny,])
 class UserCreateAPI(APIView):
     def post(self,request):
         try:
@@ -89,9 +90,17 @@ def authenticate_user(request):
         password = request.data.get('password')
 
         try:
-            user_obj = CustomUser.objects.get(mobilenumber=mobileno,password=check_password(password))
+            # password=make_password(password)
+            user_obj = CustomUser.objects.get(mobile_number=mobileno)
+            user = check_password(password,user_obj.password)
+            if user:
+                pass
+            else:
+                return Response({'status':'error','message':'invalid credentials'},status=status.HTTP_400_BAD_REQUEST) 
+        
         except Exception as e:
             return Response({'status':'error','message':'invalid credentials'},status=status.HTTP_400_BAD_REQUEST)
+        
         payload = jwt_payload_handler(user_obj)
         token = jwt_encode_handler(payload)
 

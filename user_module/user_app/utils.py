@@ -11,20 +11,15 @@ def jwt_get_secret_key():
     
     return settings.SECRET_KEY
 
-def jwt_payload_handler(user,login_type='web'):
+def jwt_payload_handler(user):
 
     """
     Custom Payload Handler.
     """
-    if login_type == 'mobile':
-        role_name = 'consumer'
-    else:
-        if user.last_login_role is None:
-            rolemapping = RoleMapping.objects.filter(user=user).order_by('role_id').first()
-            role_name = rolemapping.role.role_name
-        else:
-            role_name = user.last_login_role
-
+    
+    rolemapping = RoleMapping.objects.filter(user=user).order_by('role_id').first()
+    role_name = rolemapping.role.name
+    
     payload = {
         'user_id': user.pk,
         'email': user.email,
