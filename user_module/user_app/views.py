@@ -9,19 +9,27 @@ from django.db import transaction
 
 # Create your views here.
 
-# class RoleMasterAPI(APIView):
-#     def post(self,request):
-#         try:
-#             data=request.data
+class RoleMasterAPI(APIView):
+    def post(self,request):
+        try:
+            data=request.data
         
-#             name=data.get('name')
-#             description=data.get('description')
+            name=data.get('name')
+            description=data.get('description')
             
         
-#             transaction.set_autocommit(False)
-#             user_obj = CustomUser(
-#             first_name=first_name,
-#             last_name=last_name,
+            transaction.set_autocommit(False)
+            roleobj = RoleMaster(
+                name=name,
+                description=description,
+            )
+            roleobj.save()
+            transaction.commit()
+            return Response({"status":"sucess","message":"user created successfully"})
+
+        except Exception as e:
+            transaction.rollback()
+            return Response({"status":"error","message":e})
 
 class UserCreateAPI(APIView):
     def post(self,request):
@@ -34,6 +42,7 @@ class UserCreateAPI(APIView):
             mobile=data.get('mobile')
             is_staff=data.get('is_staff',False)
             is_superuser=data.get('is_superuser',False)
+            role=data.get('role','customer')
             
         
             transaction.set_autocommit(False)
@@ -47,6 +56,19 @@ class UserCreateAPI(APIView):
             is_superuser=is_superuser
             )
             user_obj.save()
+
+            try:
+                role_obj = RoleMaster.objects.get(name=role)
+            except RoleMaster.DoesNotExist:
+                return Response({"status":"error","message":e})
+
+            rolemap_obj = RoleMapping(
+                role=role_obj,
+                user=user_obj
+                
+            )
+            rolemap_obj.save()
+
             transaction.commit()
             return Response({"status":"sucess","message":"user created successfully"})
 
