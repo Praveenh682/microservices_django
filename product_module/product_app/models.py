@@ -6,7 +6,7 @@ class ProductMaster(models.Model):
     is_active = models.BooleanField(default=True)
     created_by = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
-    modified_by = models.IntegerField()
+    modified_by = models.IntegerField(blank=True,null=True)
     modified_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -19,7 +19,7 @@ class VariantMaster(models.Model):
     is_active = models.BooleanField(default=True)
     created_by = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
-    modified_by = models.IntegerField()
+    modified_by = models.IntegerField(blank=True,null=True)
     modified_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -34,7 +34,7 @@ class VariantOption(models.Model):
     is_active = models.BooleanField(default=True)
     created_by = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
-    modified_by = models.IntegerField()
+    modified_by = models.IntegerField(blank=True,null=True)
     modified_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
