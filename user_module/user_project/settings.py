@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import datetime
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -120,7 +121,33 @@ USE_I18N = True
 
 USE_TZ = True
 
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+    ),
+}
 
+
+JWT_AUTH = {
+
+    'JWT_VERIFY': True,
+    'JWT_VERIFY_EXPIRATION': True,
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=int(86400)),
+    'JWT_AUTH_HEADER_PREFIX': "Bearer",
+    'JWT_ALGORITHM': "HS256",
+    'JWT_SECRET_KEY': SECRET_KEY,
+    'JWT_ALLOW_REFRESH': True,
+
+    'JWT_ENCODE_HANDLER': 'user_app.utils.jwt_encode_handler',
+    'JWT_DECODE_HANDLER': 'user_app.utils.jwt_decode_handler',
+    'JWT_PAYLOAD_HANDLER': 'user_app.utils.jwt_payload_handler',
+
+    'JWT_PAYLOAD_GET_USERNAME_HANDLER': 'user_app.utils.jwt_get_userid_from_payload_handler',
+
+}
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
