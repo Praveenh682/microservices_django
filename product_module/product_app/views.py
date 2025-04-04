@@ -3,9 +3,40 @@ import jwt
 from rest_framework.response import Response
 from rest_framework.views import APIView,status
 from .models import *
+from .producer import *
 from django.conf import settings
 
+RABBITMQ_HOST = 'localhost'
 class ProductMasterAPI(APIView):
+    def get(self,request):
+        try:
+            product_id=request.query_params.get('product_id')
+
+            try:
+                product_obj = ProductMaster.objects.get(id=product_id)
+                print(product_obj.created_by)
+            except ProductMaster.DoesNotExist:
+                return Response({'status':'error','message':'details not found'},status=status.HTTP_404_NOT_FOUND)
+            
+            publish_message(product_obj.created_by)
+
+            connection=pika.BlockingConnection(pika.ConnectionParameters(RABBITMQ_HOST))
+            channel=connection.channel()
+            channel.queue_declare(queue='user_response_queue',durable=True)
+
+            method_frame, header_frame, body = channel.basic_get(queue='user_response_queue')
+
+            if method_frame:
+                channel.basic_ack(method_frame.delivary_tag)
+                user_data = json.loads(body)
+            else:
+                user_data = {"error":"no records"}
+
+            return Response({"status":"success","user_details":user_data,"product_details":{'id':product_obj.id}},status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            return Response({'status':'error','message':str(e)},status=status.HTTP_400_BAD_REQUEST)
+
     def post(self,request):
         try:
             name = request.data.get('name')
