@@ -12,7 +12,7 @@ import threading
 
 
 class RabbitMQConnection:
-    """Singleton class to manage RabbitMQ connection & channel per microservice."""
+    print(True)
     _instance = None  # Stores the single instance
 
     def __new__(cls):
@@ -27,7 +27,7 @@ class RabbitMQConnection:
     def close_connection(self):
         if self.connection and self.connection.is_open:
             self.connection.close()
-
+# utfyuuioop
 
 rabbitmq = RabbitMQConnection()    
 channel1 = rabbitmq.get_channel()

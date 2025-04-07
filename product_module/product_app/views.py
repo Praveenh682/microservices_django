@@ -29,6 +29,7 @@ class ProductMasterAPI(APIView):
             return Response({'status':'error','message':str(e)},status=status.HTTP_400_BAD_REQUEST)
 
     def post(self,request):
+        print(request)
         try:
             name = request.data.get('name')
             description = request.data.get('description')
