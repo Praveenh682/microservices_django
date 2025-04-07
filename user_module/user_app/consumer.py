@@ -36,37 +36,32 @@ def get_user_details(user_id):
 
 def callback(ch, method, properties, body):
     try:
-        print("hcbkj")
         data = json.loads(body)
-        print("data",data)
         user_id = data.get("user_id")
-        print("user_id",user_id)
+            
+        print(f"📩 Received request for user_id: {user_id} | correlation_id: {properties.correlation_id}")
 
         user_details = get_user_details(user_id)
-        print("user",user_details)
-
-        publish_message(user_details)
-
-        # response_connection = pika.BlockingConnection(pika.ConnectionParameters(RABBITMQ_HOST))
-        # response_channel = response_connection.channel()
-
-        ch.queue_declare(queue='user_response_queue', durable=True)
         response_message = json.dumps(user_details)
 
+        ch.queue_declare(queue='user_response_queue', durable=True)
         ch.basic_publish(
             exchange='',
             routing_key='user_response_queue',
             body=response_message,
             properties=pika.BasicProperties(
                 delivery_mode=2,
+                correlation_id=properties.correlation_id  # echo back same ID
             )
         )
 
-        print(f" [✔] Sent user details for {user_id}")
+        print(f"✅ Sent user details with correlation_id: {properties.correlation_id}")
         ch.basic_ack(delivery_tag=method.delivery_tag)
+
     except:
         import traceback
         traceback.print_exc()
+
 
 def start_consumer(channel):
     # connection = pika.BlockingConnection(pika.ConnectionParameters(RABBITMQ_HOST))
