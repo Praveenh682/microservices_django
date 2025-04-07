@@ -2,6 +2,8 @@ from django.shortcuts import render
 import jwt
 from rest_framework.response import Response
 from rest_framework.views import APIView,status
+
+from .consumer import start_consumer
 from .models import *
 from .producer import *
 from django.conf import settings
@@ -19,18 +21,7 @@ class ProductMasterAPI(APIView):
                 return Response({'status':'error','message':'details not found'},status=status.HTTP_404_NOT_FOUND)
             
             publish_message(product_obj.created_by)
-
-            connection=pika.BlockingConnection(pika.ConnectionParameters(RABBITMQ_HOST))
-            channel=connection.channel()
-            channel.queue_declare(queue='user_response_queue',durable=True)
-
-            method_frame, header_frame, body = channel.basic_get(queue='user_response_queue')
-
-            if method_frame:
-                channel.basic_ack(method_frame.delivary_tag)
-                user_data = json.loads(body)
-            else:
-                user_data = {"error":"no records"}
+            user_data = start_consumer()
 
             return Response({"status":"success","user_details":user_data,"product_details":{'id':product_obj.id}},status=status.HTTP_200_OK)
         

@@ -3,11 +3,19 @@ import json
 
 RABBITMQ_HOST = 'localhost'
 
+import pika
+import json
+from queue import Queue
+
+response_queue = Queue()  
+
 def callback(ch, method, properties, body):
     user_data = json.loads(body)
     print(f" [✔] Received user data: {user_data}")
 
+    response_queue.put(user_data)  
     ch.basic_ack(delivery_tag=method.delivery_tag)
+    ch.stop_consuming()
 
 def start_consumer():
     connection = pika.BlockingConnection(pika.ConnectionParameters(RABBITMQ_HOST))
@@ -19,5 +27,5 @@ def start_consumer():
     print(" [*] Waiting for user details...")
     channel.start_consuming()
 
-if __name__ == "__main__":
-    start_consumer()
+    user_data = response_queue.get()
+    return user_data
